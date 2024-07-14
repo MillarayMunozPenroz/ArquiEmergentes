@@ -55,7 +55,7 @@ def init_db():
         ID INT PRIMARY KEY AUTOINCREMENT NOT NULL,
         sensor_id INT NOT NULL,
         tiempo DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGNKEY (sensor_id) REFERENCES Sensor(sensor_id))
+        FOREIGNKEy (sensor_id) REFERENCES Sensor(sensor_id))
     )
     ''')
 
