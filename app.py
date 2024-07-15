@@ -158,7 +158,7 @@ def create_company():
     cur = conn.cursor()
 
     # Obtener información para crear la compañía y agregarla a la tabla
-    company_name = request.json.get['Company_name']
+    company_name = request.json['Company_name']
     company_api_key = generate_api_key()
 
     cur.execute('INSERT INTO Company(Company_name, Company_api_key) VALUES(?, ?)', (company_name, company_api_key))
@@ -178,11 +178,11 @@ def create_location():
     cur = conn.cursor()
 
     # Obtiene las variables
-    company_id = request.json.get['company_id']
-    location_name = request.json.get['location_name']
-    location_country = request.json.get['location_country']
-    location_city = request.json.get['location_city']
-    location_meta = request.json.get['location_meta']
+    company_id = request.json['company_id']
+    location_name = request.json['location_name']
+    location_country = request.json['location_country']
+    location_city = request.json['location_city']
+    location_meta = request.json['location_meta']
     
     cur.execute('INSERT INTO Location(company_id, location_name, location_country, location_city, location_meta) VALUES (?, ?, ?, ?, ?)', 
                 (company_id, location_name, location_country, location_city, location_meta))
@@ -278,10 +278,10 @@ def created_sensor():
     cur = conn.cursor()
 
     # Obtiene variables
-    location_id = request.json.get('location_id')
-    sensor_name = request.json.get('sensor_name')
-    sensor_category = request.json.get('sensor_category')
-    sensor_meta = request.json.get('sensor_meta')
+    location_id = request.json('location_id')
+    sensor_name = request.json('sensor_name')
+    sensor_category = request.json('sensor_category')
+    sensor_meta = request.json('sensor_meta')
     sensor_api_key = generate_api_key()
 
     cur.execute('INSERT INTO Sensor(location_id, sensor_name, sensor_category, sensor_meta, sensor_api_key) VALUES(?, ?, ?, ?, ?)', 
@@ -379,8 +379,8 @@ def insert_sensor_data():
     cur = conn.cursor()
 
     # Obtiene variables
-    sensor_id = request.json.get('lsensor_id')
-    data = request.json.get('data')
+    sensor_id = request.json('lsensor_id')
+    data = request.json('data')
 
     cur.execute('INSERT INTO Sensor_Data(sensor_id, data) VALUES(?, ?)', 
                 (sensor_id, data))
