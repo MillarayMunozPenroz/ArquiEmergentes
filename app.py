@@ -225,7 +225,8 @@ def get_sensors():
 def get_sensor(sensor_id):
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute('SELECT * FROM Sensor WHERE sensor_id = ? AND location_id IN (SELECT ID FROM Location WHERE company_id = ?)', (sensor_id, g.company_id))
+    cur.execute('SELECT * FROM Sensor WHERE sensor_id = ? AND location_id IN (SELECT ID FROM Location WHERE company_id = ?)', 
+                (sensor_id, g.company_id))
     row = cur.fetchone()
     conn.close()
     if not row:
@@ -240,7 +241,8 @@ def update_sensor(sensor_id):
     cur = conn.cursor()
 
     # Obtener el sensor
-    cur.execute('SELECT * FROM Sensor WHERE sensor_id = ? AND location_id IN (SELECT ID FROM Location WHERE company_id = ?)', (sensor_id, g.company_id))
+    cur.execute('SELECT * FROM Sensor WHERE sensor_id = ? AND location_id IN (SELECT ID FROM Location WHERE company_id = ?)', 
+                (sensor_id, g.company_id))
     sensor = cur.fetchone()
     if not sensor:
         conn.close()
@@ -266,14 +268,16 @@ def delete_sensor(sensor_id):
     cur = conn.cursor()
     
     # Verificar si el sensor existe
-    cur.execute('SELECT * FROM Sensor WHERE sensor_id = ? AND location_id IN (SELECT ID FROM Location WHERE company_id = ?', (sensor_id, g.company_id))
+    cur.execute('SELECT * FROM Sensor WHERE sensor_id = ? AND location_id IN (SELECT ID FROM Location WHERE company_id = ?', 
+                (sensor_id, g.company_id))
     sensor = cur.fetchone()
     if not sensor:
         conn.close()
         abort(404, 'Sensor not found')
     
     # Eliminar la ubicación
-    cur.execute('DELETE FROM Sensor WHERE sensor_id = ? AND location_id IN (SELECT ID FROM Location WHERE company_id = ?', (sensor_id, g.company_id))
+    cur.execute('DELETE FROM Sensor WHERE sensor_id = ? AND location_id IN (SELECT ID FROM Location WHERE company_id = ?', 
+                (sensor_id, g.company_id))
     
     conn.commit()
     conn.close()
@@ -293,52 +297,55 @@ def get_sensors_data():
     if not from_time or not to_time or not sensor_ids:
         abort(400, 'Missing required parameters')
 
-    # Construir y ejecutar la consulta de sensor_data
+    # Crear la query para que acepte un arreglo de ids
     query = 'SELECT * FROM Sensor_Data WHERE sensor_id IN ({seq}) AND tiempo BETWEEN ? AND ?'
     query = query.format(seq=','.join(['?'] * len(sensor_ids)))
     conn = get_db_connection()
     cur = conn.cursor()
+
+    # Crea la consulta con la query anterior, se entregan los ids y los tiempos
     cur.execute(query, sensor_ids + [from_time, to_time])
     rows = cur.fetchall()
     conn.close()
     return jsonify([dict(row) for row in rows]), 200
 
 # Muestra uno de tabla Sensor_Data que se encuentre en el sensor de las ubicaciones de la compañía validada por api key
-#@app.route('/api/v1/sensor_data/<int:ID>', methods=['GET'])
-#@require_company_api_key
-#def get_sensor_data(ID):
-#    conn = get_db_connection()
-#    cur = conn.cursor()
-#    cur.execute('SELECT * FROM Sensor_Data WHERE ID = ? AND sensor_id = AND location_id IN (SELECT ID FROM Location WHERE company_id = ?)', (sensor_id, g.company_id))
-#    row = cur.fetchone()
-#    conn.close()
-#    if not row:
-#        abort(404, 'Sensor not found')
-#    return jsonify(dict(row)), 200
+@app.route('/api/v1/sensor_data/<int:ID>', methods=['GET'])
+@require_company_api_key
+def get_sensor_data(ID):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM Sensor_Data WHERE ID = ? AND sensor_id IN (SELECT sensor_id FROM Sensor WHERE location_id IN (SELECT ID FROM Location WHERE company_id = ?))', 
+                (ID, g.company_id))
+    row = cur.fetchone()
+    conn.close()
+    if not row:
+        abort(404, 'Sensor not found')
+    return jsonify(dict(row)), 200
 
 
 # Edita en tabla Sensor_Data
 @app.route('/api/v1/sensor_data/<int:ID>', methods=['PUT'])
 @require_company_api_key
-@require_sensor_api_key #esto no se si va
 def update_sensor_data(ID):
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # Obtener el sensor
-    cur.execute('SELECT * FROM Sensor WHERE ID = ? AND sensor_id = ?)', (ID, g.sensor_id))
-    sensor = cur.fetchone()
-    if not sensor:
+    # Obtener el sensor data para ver si existe
+    cur.execute('SELECT * FROM Sensor_Data WHERE ID = ? AND sensor_id IN (SELECT sensor_id FROM Sensor WHERE location_id IN (SELECT ID FROM Location WHERE company_id = ?))', 
+                (ID, g.company_id))
+    sensor_data = cur.fetchone()
+    if not sensor_data:
         conn.close()
-        abort(404, 'Sensor not found')
+        abort(404, 'Sensor Data not found')
 
     # Actualizar sensor_data
     sensor_id = request.json.get('sensor_id')
     data = request.json.get('data')
     time = request.json.get('time')
     
-    cur.execute('UPDATE Sensor_Data SET sensor_id = ?, data = ?, time = ? WHERE ID = ? AND sensor_id = ?)', 
-                (sensor_id, data, time, ID, g.sensor_id))
+    cur.execute('UPDATE Sensor_Data SET sensor_id = ?, data = ?, time = ? WHERE ID = ? AND sensor_id IN (SELECT sensor_id FROM Sensor WHERE location_id IN (SELECT ID FROM Location WHERE company_id = ?))', 
+                (sensor_id, data, time, ID, g.company_id))
     conn.commit()
     conn.close()
     return jsonify({'message': 'Updated successfully'}), 200
@@ -346,21 +353,26 @@ def update_sensor_data(ID):
 # Elimina en tabla Sensor_Data
 @app.route('/api/v1/sensor_data/<int:ID>', methods=['DELETE'])
 @require_company_api_key
-@require_sensor_api_key
 def delete_sensor_data(ID):
     conn = get_db_connection()
     cur = conn.cursor()
     
     # Verificar si el sensor_data existe
-    cur.execute('SELECT * FROM Sensor_Data WHERE ID = ? AND sensor_id = ?', (ID, g.sensor_id))
+    cur.execute('SELECT * FROM Sensor_Data WHERE ID = ? AND sensor_id IN (SELECT sensor_id FROM Sensor WHERE location_id IN (SELECT ID FROM Location WHERE company_id = ?))', 
+                (ID, g.company_id))
     sensor_data = cur.fetchone()
     if not sensor_data:
         conn.close()
         abort(404, 'Sensor data not found')
     
     # Eliminar la ubicación
-    cur.execute('DELETE FROM Sensor_Data WHERE ID = ? AND sensor_id = ?', (ID, g.sensor_id))
+    cur.execute('DELETE FROM Sensor_Data WHERE ID = ? AND sensor_id IN (SELECT sensor_id FROM Sensor WHERE location_id IN (SELECT ID FROM Location WHERE company_id = ?))', 
+                (ID, g.company_id))
     
     conn.commit()
     conn.close()
     return jsonify({'message': 'Deleted successfully'}), 200
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
