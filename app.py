@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify, abort, g
 import sqlite3
 import json
 from datetime import datetime
+import uuid
+
 
 app = Flask(__name__)
 
@@ -74,10 +76,6 @@ def init_db():
     # Cierra la conexión a la base de datos
     conn.close()
 
-# Inicializa la base de datos.
-init_db()
-
-
 # Se crea un decorador que se encarga de validar el company_api_key
 def require_company_api_key(f):
     def decorator(*args, **kwargs):
@@ -126,8 +124,73 @@ def require_sensor_api_key(f):
     decorator.__name__ = f.__name__
     return decorator
 
+# Se crea un decorador que se encarga de validar el Admin
+def require_admin(f):
+    def decorator(*args, **kwargs):
+        username = request.headers.get('Username')
+        password = request.headers.get('Password')
+        
+        if not username or not password:
+            abort(401, 'Admin credentials are required')
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute('SELECT * FROM Admin WHERE Username = ? AND Password = ?', (username, password))
+        admin = cur.fetchone()
+        conn.close()
+        
+        if not admin:
+            abort(403, 'Invalid admin credentials')
+        
+        return f(*args, **kwargs)
+    decorator.__name__ = f.__name__
+    return decorator
+
+# Creador de api key para la creación de compañías y sensores
+def generate_api_key():
+    return str(uuid.uuid4())
+
+# Admin crea Company
+@app.route('/api/v1/company', methods=['POST'])
+@require_admin
+def create_company():
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Obtener información para crear la compañía y agregarla a la tabla
+    company_name = request.json.get['Company_name']
+    company_api_key = generate_api_key()
+
+    cur.execute('INSERT INTO Company(Company_name, Company_api_key) VALUES(?, ?)', (company_name, company_api_key))
+    conn.commit()
+    company_id = cur.lastrowid
+    conn.close()
+
+    return jsonify({'company_id': company_id, 'company_api_key': company_api_key,  'message': 'Successfully created'}), 201
 
 # TABLA LOCATION
+
+# Admin crea Ubicación
+@app.route('/api/v1/location', methods=['POST'])
+@require_admin
+def create_location():
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Obtiene las variables
+    company_id = request.json.get['company_id']
+    location_name = request.json.get['location_name']
+    location_country = request.json.get['location_country']
+    location_city = request.json.get['location_city']
+    location_meta = request.json.get['location_meta']
+    
+    cur.execute('INSERT INTO Location(company_id, location_name, location_country, location_city, location_meta) VALUES (?, ?, ?, ?, ?)', 
+                (company_id, location_name, location_country, location_city, location_meta))
+    conn.commit()
+    location_id = cur.lastrowid
+    conn.close()
+    
+    return jsonify({'location_id': location_id, 'message': 'Successfully created'}), 201
 
 # Muestra todo de tabla Location que pertenezcan a la compañía validada por api key
 @app.route('/api/v1/location', methods=['GET'])
@@ -207,6 +270,29 @@ def delete_location(location_name):
 
 # TABLA SENSOR
 
+# Admin Crea un sensor
+@app.route('/api/v1/sensor', methods=['POST'])
+@require_admin
+def created_sensor():
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Obtiene variables
+    location_id = request.json.get('location_id')
+    sensor_name = request.json.get('sensor_name')
+    sensor_category = request.json.get('sensor_category')
+    sensor_meta = request.json.get('sensor_meta')
+    sensor_api_key = generate_api_key()
+
+    cur.execute('INSERT INTO Sensor(location_id, sensor_name, sensor_category, sensor_meta, sensor_api_key) VALUES(?, ?, ?, ?, ?)', 
+                (location_id, sensor_name, sensor_category, sensor_meta, sensor_api_key))
+    conn.commit
+    sensor_id = cur.lastrowid
+    conn.close
+
+    return jsonify({'sensor_id': sensor_id, 'sensor_api_key': sensor_api_key, 'message': 'Successfully created'}), 201
+
+
 # Muestra todo de tabla Sensor que correspondan a las ubicaciones de la compañía validada por api key
 @app.route('/api/v1/sensor', methods=['GET'])
 # Valida el api key
@@ -284,6 +370,25 @@ def delete_sensor(sensor_id):
     return jsonify({'message': 'Deleted successfully'}), 200
 
 # TABLA SENSOR_DATA
+
+# Admin crea Sensor_Data
+@app.route('/api/v1/sensor_data', methods=['POST'])
+@require_sensor_api_key
+def insert_sensor_data():
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Obtiene variables
+    sensor_id = request.json.get('lsensor_id')
+    data = request.json.get('data')
+
+    cur.execute('INSERT INTO Sensor_Data(sensor_id, data) VALUES(?, ?)', 
+                (sensor_id, data))
+    conn.commit
+    sensor_data_id = cur.lastrowid
+    conn.close
+
+    return jsonify({'sensor_data_id': sensor_data_id, 'message': 'Successfully created'}), 201
 
 # Muestra todo de tabla Sensor_Data que correspondan a los sensores de las ubicaciones de la compañía validada por api key
 @app.route('/api/v1/sensor_data', methods=['GET'])
@@ -374,5 +479,7 @@ def delete_sensor_data(ID):
     return jsonify({'message': 'Deleted successfully'}), 200
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':   
+    # Inicializa la base de datos.
+    init_db()
     app.run(debug=True)
