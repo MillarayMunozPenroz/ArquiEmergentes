@@ -92,7 +92,7 @@ def init_db():
 def require_company_api_key(f):
     def decorator(*args, **kwargs):
         # Obtiene el company_api_key de los parámetros de la petición.
-        company_api_key = request.args.get('company_api_key')
+        company_api_key = request.headers.get('company_api_key')
         # Si no es válido el api key, aborta la petición con un error HTTP 400
         if not company_api_key:
             abort(400, 'company_api_key is required')
@@ -117,7 +117,7 @@ def require_company_api_key(f):
 # Se crea validador del sensor_api_key
 def require_sensor_api_key(f):
     def decorator(*args, **kwargs):
-        sensor_api_key = request.args.get('company_api_key')
+        sensor_api_key = request.headers.get('company_api_key')
 
         if not sensor_api_key:
             abort(400, 'sensor_api_key is required')
