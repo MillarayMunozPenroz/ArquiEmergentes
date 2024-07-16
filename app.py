@@ -15,72 +15,78 @@ def get_db_connection():
 
 # Creación de tablas
 def init_db():
-    # Se crea tabla Admin
-    conn = get_db_connection()
-    print("Initializing database...")
-    conn.execute('''
-    CREATE TABLE IF NOT EXISTS Admin (
-        Username STRING PRIMARY KEY,
-        Password STRING NOT NULL
-    )
-    ''')
-    print("Admin table created.")
+    try:
+        # Se crea tabla Admin
+        conn = get_db_connection()
+        print("Initializing database...")
+        conn.execute('''
+        CREATE TABLE IF NOT EXISTS Admin (
+            Username STRING PRIMARY KEY,
+            Password STRING NOT NULL
+        )
+        ''')
+        print("Admin table created.")
 
-    # Se crea la tabla Company
-    conn.execute('''
-    CREATE TABLE IF NOT EXISTS Company(
-        ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        Company_name STRING NOT NULL,
-        Company_api_key STRING NOT NULL
-    )
-    ''')
-    print("Company table created.")
-    
-    # Se crea la tabla Location
-    conn.execute('''
-    CREATE TABLE IF NOT EXISTS Location(
-        ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        company_id INTEGER NOT NULL,
-        location_name STRING NOT NULL,
-        location_country STRING NOT NULL,
-        location_city STRING NOT NULL,
-        location_meta STRING NOT NULL,
-        FOREIGNKEY company_id REFERENCES Company(ID)
-    )
-    ''')
-    print("Location table created.")
+        # Se crea la tabla Company
+        conn.execute('''
+        CREATE TABLE IF NOT EXISTS Company(
+            ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            Company_name STRING NOT NULL,
+            Company_api_key STRING NOT NULL
+        )
+        ''')
+        print("Company table created.")
+        
+        # Se crea la tabla Location
+        conn.execute('''
+        CREATE TABLE IF NOT EXISTS Location(
+            ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            company_id INTEGER NOT NULL,
+            location_name STRING NOT NULL,
+            location_country STRING NOT NULL,
+            location_city STRING NOT NULL,
+            location_meta STRING NOT NULL,
+            FOREIGNKEY company_id REFERENCES Company(ID)
+        )
+        ''')
+        print("Location table created.")
 
-    # Se crea la tabla Sensor
-    conn.execute('''
-    CREATE TABLE IF NOT EXISTS Sensor(
-        location_id INTEGER NOT NULL,
-        sensor_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        sensor_name STRING NOT NULL,
-        sensor_category STRING NOT NULL,
-        sensor_meta STRING NOT NULL,
-        sensor_api_key STRING NOT NULL,
-        FOREIGNKEY location_id REFERENCES Location(ID)
-    )
-    ''')
-    print("Sensor table created.")
+        # Se crea la tabla Sensor
+        conn.execute('''
+        CREATE TABLE IF NOT EXISTS Sensor(
+            location_id INTEGER NOT NULL,
+            sensor_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            sensor_name STRING NOT NULL,
+            sensor_category STRING NOT NULL,
+            sensor_meta STRING NOT NULL,
+            sensor_api_key STRING NOT NULL,
+            FOREIGNKEY location_id REFERENCES Location(ID)
+        )
+        ''')
+        print("Sensor table created.")
 
-    # Se crea la tabla Sensor_Data
-    conn.execute('''
-    CREATE TABLE IF NOT EXISTS Sensor_Data(
-        ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        sensor_id INTEGER NOT NULL,
-        data STRING NOT NULL,
-        time DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGNKEY sensor_id REFERENCES Sensor(sensor_id)
-    )
-    ''')
-    print("Sensor_Data table created.")
+        # Se crea la tabla Sensor_Data
+        conn.execute('''
+        CREATE TABLE IF NOT EXISTS Sensor_Data(
+            ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            sensor_id INTEGER NOT NULL,
+            data STRING NOT NULL,
+            time DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGNKEY sensor_id REFERENCES Sensor(sensor_id)
+        )
+        ''')
+        print("Sensor_Data table created.")
 
-    # Confirmar las transacciones realizadas
-    conn.commit()
+        # Confirmar las transacciones realizadas
+        conn.commit()
+        print("Database initialized successfully.")
 
-    # Cierra la conexión a la base de datos
-    conn.close()
+    except Exception as e:
+        print(f"Error initializing database: {str(e)}")
+        raise  # Levantar la excepción para identificar problemas durante la inicialización
+    finally:
+        # Cierra la conexión a la base de datos
+        conn.close()
 
 # Se crea un decorador que se encarga de validar el company_api_key
 def require_company_api_key(f):
@@ -510,6 +516,7 @@ if __name__ == '__main__':
     print("Database and tables created successfully.")
     app.run(debug=True, host='0.0.0.0', port=8080)
 
+# Para identificar errores
 if not app.debug:
     file_handler = FileHandler('error.log')
     file_handler.setFormatter(Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
