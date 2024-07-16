@@ -247,7 +247,7 @@ def create_location():
 def get_locations():
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute('SELECT * FROM Location WHERE company_id = ?', (g.company_id))
+    cur.execute('SELECT * FROM Location WHERE company_id = ?', (g.company_id,))
     rows = cur.fetchall()
     conn.close()
     return jsonify([dict(row) for row in rows]), 200
@@ -258,7 +258,7 @@ def get_locations():
 def get_location(location_name):
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute('SELECT * FROM Location WHERE location_name = ? AND company_id = ?', (location_name, g.company_id))
+    cur.execute('SELECT * FROM Location WHERE location_name = ? AND company_id = ?', (location_name, g.company_id,))
     location = cur.fetchone()
     conn.close()
     if not location:
@@ -273,23 +273,23 @@ def update_location(location_name):
     cur = conn.cursor()
     
     # Obtener la ubicación actual
-    cur.execute('SELECT * FROM Location WHERE location_name = ? AND company_id = ?', (location_name, g.company_id))
+    cur.execute('SELECT * FROM Location WHERE location_name = ? AND company_id = ?', (location_name, g.company_id,))
     location = cur.fetchone()
     if not location:
         conn.close()
         abort(404, 'Location not found')
 
     # Actualizar la ubicación
-    location_name = request.json.get('location_name')
-    location_country = request.json.get('location_country')
-    location_city = request.json.get('location_city')
-    location_meta = request.json.get('location_meta')
+    location_name = request.json('location_name')
+    location_country = request.json('location_country')
+    location_city = request.json('location_city')
+    location_meta = request.json('location_meta')
     
     cur.execute('''
         UPDATE Location 
         SET location_name = ?, location_country = ?, location_city = ?, location_meta = ?
         WHERE location_name = ? AND company_id = ?
-    ''', (location_name, location_country, location_city, location_meta, location_name, g.company_id))
+    ''', (location_name, location_country, location_city, location_meta, location_name, g.company_id,))
     
     conn.commit()
     conn.close()
@@ -303,14 +303,14 @@ def delete_location(location_name):
     cur = conn.cursor()
     
     # Verificar si la ubicación existe
-    cur.execute('SELECT * FROM Location WHERE location_name = ? AND company_id = ?', (location_name, g.company_id))
+    cur.execute('SELECT * FROM Location WHERE location_name = ? AND company_id = ?', (location_name, g.company_id,))
     location = cur.fetchone()
     if not location:
         conn.close()
         abort(404, 'Location not found')
     
     # Eliminar la ubicación
-    cur.execute('DELETE FROM Location WHERE location_name = ? AND company_id = ?', (location_name, g.company_id))
+    cur.execute('DELETE FROM Location WHERE location_name = ? AND company_id = ?', (location_name, g.company_id,))
     
     conn.commit()
     conn.close()
@@ -360,7 +360,7 @@ def get_sensor(sensor_id):
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute('SELECT * FROM Sensor WHERE sensor_id = ? AND location_id IN (SELECT ID FROM Location WHERE company_id = ?)', 
-                (sensor_id, g.company_id))
+                (sensor_id, g.company_id,))
     row = cur.fetchone()
     conn.close()
     if not row:
@@ -376,7 +376,7 @@ def update_sensor(sensor_id):
 
     # Obtener el sensor
     cur.execute('SELECT * FROM Sensor WHERE sensor_id = ? AND location_id IN (SELECT ID FROM Location WHERE company_id = ?)', 
-                (sensor_id, g.company_id))
+                (sensor_id, g.company_id,))
     sensor = cur.fetchone()
     if not sensor:
         conn.close()
@@ -389,7 +389,7 @@ def update_sensor(sensor_id):
     sensor_meta = request.json.get('sensor_meta')
     
     cur.execute('UPDATE Sensor SET location_id = ?, sensor_name = ?, sensor_category = ?, sensor_meta = ? WHERE sensor_id = ? AND location_id IN (SELECT ID FROM Location WHERE company_id = ?)', 
-                (location_id, sensor_name, sensor_category, sensor_meta, sensor_id, g.company_id))
+                (location_id, sensor_name, sensor_category, sensor_meta, sensor_id, g.company_id,))
     conn.commit()
     conn.close()
     return jsonify({'message': 'Updated successfully'}), 200
@@ -403,7 +403,7 @@ def delete_sensor(sensor_id):
     
     # Verificar si el sensor existe
     cur.execute('SELECT * FROM Sensor WHERE sensor_id = ? AND location_id IN (SELECT ID FROM Location WHERE company_id = ?', 
-                (sensor_id, g.company_id))
+                (sensor_id, g.company_id,))
     sensor = cur.fetchone()
     if not sensor:
         conn.close()
@@ -411,7 +411,7 @@ def delete_sensor(sensor_id):
     
     # Eliminar la ubicación
     cur.execute('DELETE FROM Sensor WHERE sensor_id = ? AND location_id IN (SELECT ID FROM Location WHERE company_id = ?', 
-                (sensor_id, g.company_id))
+                (sensor_id, g.company_id,))
     
     conn.commit()
     conn.close()
@@ -469,7 +469,7 @@ def get_sensor_data(ID):
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute('SELECT * FROM Sensor_Data WHERE ID = ? AND sensor_id IN (SELECT sensor_id FROM Sensor WHERE location_id IN (SELECT ID FROM Location WHERE company_id = ?))', 
-                (ID, g.company_id))
+                (ID, g.company_id,))
     row = cur.fetchone()
     conn.close()
     if not row:
@@ -486,19 +486,19 @@ def update_sensor_data(ID):
 
     # Obtener el sensor data para ver si existe
     cur.execute('SELECT * FROM Sensor_Data WHERE ID = ? AND sensor_id IN (SELECT sensor_id FROM Sensor WHERE location_id IN (SELECT ID FROM Location WHERE company_id = ?))', 
-                (ID, g.company_id))
+                (ID, g.company_id,))
     sensor_data = cur.fetchone()
     if not sensor_data:
         conn.close()
         abort(404, 'Sensor Data not found')
 
     # Actualizar sensor_data
-    sensor_id = request.json.get('sensor_id')
-    data = request.json.get('data')
-    time = request.json.get('time')
+    sensor_id = request.json('sensor_id')
+    data = request.json('data')
+    time = request.json('time')
     
     cur.execute('UPDATE Sensor_Data SET sensor_id = ?, data = ?, time = ? WHERE ID = ? AND sensor_id IN (SELECT sensor_id FROM Sensor WHERE location_id IN (SELECT ID FROM Location WHERE company_id = ?))', 
-                (sensor_id, data, time, ID, g.company_id))
+                (sensor_id, data, time, ID, g.company_id,))
     conn.commit()
     conn.close()
     return jsonify({'message': 'Updated successfully'}), 200
@@ -520,7 +520,7 @@ def delete_sensor_data(ID):
     
     # Eliminar la ubicación
     cur.execute('DELETE FROM Sensor_Data WHERE ID = ? AND sensor_id IN (SELECT sensor_id FROM Sensor WHERE location_id IN (SELECT ID FROM Location WHERE company_id = ?))', 
-                (ID, g.company_id))
+                (ID, g.company_id,))
     
     conn.commit()
     conn.close()
