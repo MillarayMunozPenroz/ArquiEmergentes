@@ -211,7 +211,7 @@ def create_company():
 def get_companys():
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute(f'SELECT * FROM Company WHERE Username = ?', (g.admin))
+    cur.execute(f'SELECT * FROM Company')
     rows = cur.fetchall()
     conn.close()
     return jsonify([dict(row) for row in rows]), 200
