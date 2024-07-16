@@ -24,6 +24,7 @@ def init_db():
     )
     ''')
 
+    # Se crea un admin genérico
     conn.execute('''
     INSERT INTO Admin(Username, Password) VALUES(Admin, 1234)
     ''')
