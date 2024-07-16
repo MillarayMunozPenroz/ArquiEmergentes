@@ -27,7 +27,7 @@ def init_db():
     # Se crea la tabla Company
     conn.execute('''
     CREATE TABLE IF NOT EXISTS Company(
-        ID INT PRIMARY KEY AUTOINCREMENT NOT NULL,
+        ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         Company_name STRING NOT NULL,
         Company_api_key STRING NOT NULL
     )
@@ -36,43 +36,38 @@ def init_db():
     # Se crea la tabla Location
     conn.execute('''
     CREATE TABLE IF NOT EXISTS Location(
-        ID INT PRIMARY KEY AUTOINCREMENT NOT NULL,
-        company_id INT NOT NULL,
+        ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        company_id INTEGER NOT NULL,
         location_name STRING NOT NULL,
         location_country STRING NOT NULL,
         location_city STRING NOT NULL,
         location_meta STRING NOT NULL,
-        FOREIGNKEY (company_id) REFERENCES Company(ID)
+        FOREIGNKEY company_id REFERENCES Company(ID)
     )
     ''')
 
     # Se crea la tabla Sensor
     conn.execute('''
     CREATE TABLE IF NOT EXISTS Sensor(
-        location_id INT NOT NULL,
-        sensor_id INT PRIMARY KEY AUTOINCREMENT NOT NULL,
+        location_id INTEGER NOT NULL,
+        sensor_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         sensor_name STRING NOT NULL,
         sensor_category STRING NOT NULL,
         sensor_meta STRING NOT NULL,
         sensor_api_key STRING NOT NULL,
-        FOREIGNKEY (location_id) REFERENCES Location(ID)
+        FOREIGNKEY location_id REFERENCES Location(ID)
     )
     ''')
 
     # Se crea la tabla Sensor_Data
     conn.execute('''
     CREATE TABLE IF NOT EXISTS Sensor_Data(
-        ID INT PRIMARY KEY AUTOINCREMENT NOT NULL,
-        sensor_id INT NOT NULL,
+        ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        sensor_id INTEGER NOT NULL,
         data TEXT NOT NULL,
         time DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGNKEY (sensor_id) REFERENCES Sensor(sensor_id))
+        FOREIGNKEY sensor_id REFERENCES Sensor(sensor_id)
     )
-    ''')
-
-    conn.execute('''
-    INSERT INTO Admin (Username, Password) 
-                 VALUES ('admin', 'password');
     ''')
 
     # Confirmar las transacciones realizadas
@@ -80,7 +75,7 @@ def init_db():
 
     # Cierra la conexión a la base de datos
     conn.close()
-2
+
 # Se crea un decorador que se encarga de validar el company_api_key
 def require_company_api_key(f):
     def decorator(*args, **kwargs):
@@ -154,6 +149,22 @@ def require_admin(f):
 # Creador de api key para la creación de compañías y sensores
 def generate_api_key():
     return str(uuid.uuid4())
+
+# Crear Admin
+@app.route('/api/v1/crea_admin', methods=['POST'])
+def create_admin():
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Obtener información para crear al admin
+    username = request.json['Username']
+    password = request.json['Password']
+ 
+    cur.execute('INSERT INTO Admin (Username, Password) VALUES (?, ?)', (username, password))
+    conn.commit()
+    conn.close()
+
+    return jsonify({'message': 'Successfully created'}), 201
 
 # Admin crea Company
 @app.route('/api/v1/company', methods=['POST'])
