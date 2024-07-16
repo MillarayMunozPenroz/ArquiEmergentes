@@ -482,4 +482,4 @@ def delete_sensor_data(ID):
 if __name__ == '__main__':   
     # Inicializa la base de datos.
     init_db()
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=8080)
