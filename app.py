@@ -24,11 +24,6 @@ def init_db():
     )
     ''')
 
-    # Se crea un admin genérico
-    #conn.execute('''
-    #INSERT INTO Admin(Username, Password) VALUES(Admin, 1234)
-    #''')
-
     # Se crea la tabla Company
     conn.execute('''
     CREATE TABLE IF NOT EXISTS Company(
