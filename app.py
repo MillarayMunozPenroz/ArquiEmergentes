@@ -208,7 +208,7 @@ def create_company():
 @app.route('/api/v1/company', methods=['GET'])
 # Valida el admin
 @require_admin
-def get_locations():
+def get_companys():
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute(f'SELECT * FROM Company WHERE Username = ?', (g.admin))
