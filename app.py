@@ -17,12 +17,14 @@ def get_db_connection():
 def init_db():
     # Se crea tabla Admin
     conn = get_db_connection()
+    print("Initializing database...")
     conn.execute('''
     CREATE TABLE IF NOT EXISTS Admin (
         Username STRING PRIMARY KEY,
         Password STRING NOT NULL
     )
     ''')
+    print("Admin table created.")
 
     # Se crea la tabla Company
     conn.execute('''
@@ -32,6 +34,7 @@ def init_db():
         Company_api_key STRING NOT NULL
     )
     ''')
+    print("Company table created.")
     
     # Se crea la tabla Location
     conn.execute('''
@@ -45,6 +48,7 @@ def init_db():
         FOREIGNKEY company_id REFERENCES Company(ID)
     )
     ''')
+    print("Location table created.")
 
     # Se crea la tabla Sensor
     conn.execute('''
@@ -58,6 +62,7 @@ def init_db():
         FOREIGNKEY location_id REFERENCES Location(ID)
     )
     ''')
+    print("Sensor table created.")
 
     # Se crea la tabla Sensor_Data
     conn.execute('''
@@ -69,6 +74,7 @@ def init_db():
         FOREIGNKEY sensor_id REFERENCES Sensor(sensor_id)
     )
     ''')
+    print("Sensor_Data table created.")
 
     # Confirmar las transacciones realizadas
     conn.commit()
@@ -501,6 +507,7 @@ def delete_sensor_data(ID):
 
 if __name__ == '__main__':
     init_db()
+    print("Database and tables created successfully.")
     app.run(debug=True, host='0.0.0.0', port=8080)
 
 if not app.debug:
