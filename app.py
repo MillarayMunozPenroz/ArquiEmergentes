@@ -157,7 +157,7 @@ def generate_api_key():
 
 # Admin crea Company
 @app.route('/api/v1/company', methods=['POST'])
-#@require_admin
+@require_admin
 def create_company():
     conn = get_db_connection()
     cur = conn.cursor()
@@ -177,7 +177,7 @@ def create_company():
 
 # Admin crea Ubicación
 @app.route('/api/v1/location', methods=['POST'])
-#@require_admin
+@require_admin
 def create_location():
     conn = get_db_connection()
     cur = conn.cursor()
@@ -277,7 +277,7 @@ def delete_location(location_name):
 
 # Admin Crea un sensor
 @app.route('/api/v1/sensor', methods=['POST'])
-#@require_admin
+@require_admin
 def created_sensor():
     conn = get_db_connection()
     cur = conn.cursor()
