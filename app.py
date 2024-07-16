@@ -70,6 +70,11 @@ def init_db():
     )
     ''')
 
+    conn.execute('''
+    INSERT INTO Admin (Username, Password) 
+                 VALUES ('admin', 'password');
+    ''')
+
     # Confirmar las transacciones realizadas
     conn.commit()
 
