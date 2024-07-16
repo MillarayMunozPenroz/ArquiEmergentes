@@ -1,7 +1,5 @@
 from flask import Flask, request, jsonify, abort, g
 import sqlite3
-import json
-from datetime import datetime
 import uuid
 import logging
 from logging import FileHandler, Formatter
@@ -21,8 +19,8 @@ def init_db():
     conn = get_db_connection()
     conn.execute('''
     CREATE TABLE IF NOT EXISTS Admin (
-        Username TEXT PRIMARY KEY,
-        Password TEXT NOT NULL
+        Username STRING PRIMARY KEY,
+        Password STRING NOT NULL
     )
     ''')
 
@@ -30,8 +28,8 @@ def init_db():
     conn.execute('''
     CREATE TABLE IF NOT EXISTS Company(
         ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        Company_name TEXT NOT NULL,
-        Company_api_key TEXT NOT NULL
+        Company_name STRING NOT NULL,
+        Company_api_key STRING NOT NULL
     )
     ''')
     
@@ -40,10 +38,10 @@ def init_db():
     CREATE TABLE IF NOT EXISTS Location(
         ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         company_id INTEGER NOT NULL,
-        location_name TEXT NOT NULL,
-        location_country TEXT NOT NULL,
-        location_city TEXT NOT NULL,
-        location_meta TEXT NOT NULL,
+        location_name STRING NOT NULL,
+        location_country STRING NOT NULL,
+        location_city STRING NOT NULL,
+        location_meta STRING NOT NULL,
         FOREIGNKEY company_id REFERENCES Company(ID)
     )
     ''')
@@ -53,10 +51,10 @@ def init_db():
     CREATE TABLE IF NOT EXISTS Sensor(
         location_id INTEGER NOT NULL,
         sensor_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        sensor_name TEXT NOT NULL,
-        sensor_category TEXT NOT NULL,
-        sensor_meta TEXT NOT NULL,
-        sensor_api_key TEXT NOT NULL,
+        sensor_name STRING NOT NULL,
+        sensor_category STRING NOT NULL,
+        sensor_meta STRING NOT NULL,
+        sensor_api_key STRING NOT NULL,
         FOREIGNKEY location_id REFERENCES Location(ID)
     )
     ''')
@@ -66,7 +64,7 @@ def init_db():
     CREATE TABLE IF NOT EXISTS Sensor_Data(
         ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         sensor_id INTEGER NOT NULL,
-        data TEXT NOT NULL,
+        data STRING NOT NULL,
         time DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGNKEY sensor_id REFERENCES Sensor(sensor_id)
     )
