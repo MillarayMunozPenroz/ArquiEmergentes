@@ -1,18 +1,22 @@
-# Usa una imagen base de Python
+# Use an official Python runtime as a parent image
 FROM python:3.9-slim
 
-# Establece el directorio de trabajo en el contenedor
+# Set the working directory in the container
 WORKDIR /app
 
-# Copia los archivos necesarios al contenedor
-COPY requirements.txt requirements.txt
-COPY . .
+# Copy the current directory contents into the container at /app
+COPY . /app
 
-# Instala las dependencias
-RUN pip install -r requirements.txt
+# Install any needed packages specified in requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Expone el puerto en el que correrá la aplicación
+# Make port 8080 available to the world outside this container
 EXPOSE 8080
 
-# Comando para correr la aplicación
-CMD ["gunicorn", "-b", "0.0.0.0:8080", "app:app"]
+# Define environment variable
+ENV NAME World
+
+ENV HOST 0.0.0.0
+
+# Run app.py when the container launches
+CMD ["python", "app.py"]
