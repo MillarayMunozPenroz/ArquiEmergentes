@@ -25,9 +25,9 @@ def init_db():
     ''')
 
     # Se crea un admin genérico
-    conn.execute('''
-    INSERT INTO Admin(Username, Password) VALUES(Admin, 1234)
-    ''')
+    #conn.execute('''
+    #INSERT INTO Admin(Username, Password) VALUES(Admin, 1234)
+    #''')
 
     # Se crea la tabla Company
     conn.execute('''
@@ -157,7 +157,7 @@ def generate_api_key():
 
 # Admin crea Company
 @app.route('/api/v1/company', methods=['POST'])
-@require_admin
+#@require_admin
 def create_company():
     conn = get_db_connection()
     cur = conn.cursor()
@@ -177,7 +177,7 @@ def create_company():
 
 # Admin crea Ubicación
 @app.route('/api/v1/location', methods=['POST'])
-@require_admin
+#@require_admin
 def create_location():
     conn = get_db_connection()
     cur = conn.cursor()
@@ -277,7 +277,7 @@ def delete_location(location_name):
 
 # Admin Crea un sensor
 @app.route('/api/v1/sensor', methods=['POST'])
-@require_admin
+#@require_admin
 def created_sensor():
     conn = get_db_connection()
     cur = conn.cursor()
@@ -376,7 +376,7 @@ def delete_sensor(sensor_id):
 
 # TABLA SENSOR_DATA
 
-# Admin crea Sensor_Data
+# Crea Sensor_Data
 @app.route('/api/v1/sensor_data', methods=['POST'])
 @require_sensor_api_key
 def insert_sensor_data():
