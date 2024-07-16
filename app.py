@@ -205,7 +205,7 @@ def create_company():
     return jsonify({'company_id': company_id, 'company_api_key': company_api_key,  'message': 'Successfully created'}), 201
 
 # Muestra todo de tabla Company que pertenezcan al admin validado por credenciales
-@app.route('/api/v1/location', methods=['GET'])
+@app.route('/api/v1/company', methods=['GET'])
 # Valida el admin
 @require_admin
 def get_locations():
