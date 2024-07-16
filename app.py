@@ -80,29 +80,7 @@ def init_db():
 
     # Cierra la conexión a la base de datos
     conn.close()
-
-# Se crea un decorador que se encarga de validar el Admin
-def require_admin(f):
-    def decorator(*args, **kwargs):
-        username = request.headers.get('Username')
-        password = request.headers.get('Password')
-        
-        if not username or not password:
-            abort(401, 'Admin credentials are required')
-
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute('SELECT * FROM Admin WHERE Username = ? AND Password = ?', (username, password))
-        admin = cur.fetchone()
-        conn.close()
-        
-        if not admin:
-            abort(403, 'Invalid admin credentials')
-        
-        return f(*args, **kwargs)
-    decorator.__name__ = f.__name__
-    return decorator
-
+2
 # Se crea un decorador que se encarga de validar el company_api_key
 def require_company_api_key(f):
     def decorator(*args, **kwargs):
@@ -147,6 +125,28 @@ def require_sensor_api_key(f):
             abort(401, 'Invalid sensor_api_key')
 
         g.sensor_id = sensor['sensor_id']
+        return f(*args, **kwargs)
+    decorator.__name__ = f.__name__
+    return decorator
+
+# Se crea un decorador que se encarga de validar el Admin
+def require_admin(f):
+    def decorator(*args, **kwargs):
+        username = request.headers.get('Username')
+        password = request.headers.get('Password')
+        
+        if not username or not password:
+            abort(401, 'Admin credentials are required')
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute('SELECT * FROM Admin WHERE Username = ? AND Password = ?', (username, password))
+        admin = cur.fetchone()
+        conn.close()
+        
+        if not admin:
+            abort(403, 'Invalid admin credentials')
+        
         return f(*args, **kwargs)
     decorator.__name__ = f.__name__
     return decorator
