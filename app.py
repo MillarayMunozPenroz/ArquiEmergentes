@@ -211,7 +211,7 @@ def create_company():
 def get_companys():
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute(f'SELECT * FROM Company')
+    cur.execute('SELECT * FROM Company')
     rows = cur.fetchall()
     conn.close()
     return jsonify([dict(row) for row in rows]), 200
@@ -247,7 +247,7 @@ def create_location():
 def get_locations():
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute(f'SELECT * FROM Location WHERE company_id = ?', (g.company_id))
+    cur.execute('SELECT * FROM Location WHERE company_id = ?', (g.company_id))
     rows = cur.fetchall()
     conn.close()
     return jsonify([dict(row) for row in rows]), 200
