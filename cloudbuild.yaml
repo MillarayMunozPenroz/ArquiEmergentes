@@ -9,6 +9,6 @@ steps:
 
 images:
   - 'gcr.io/$PROJECT_ID/ArquiEmergentes'
-
+  
 options:
   logging: CLOUD_LOGGING_ONLY
