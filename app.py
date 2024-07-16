@@ -3,6 +3,8 @@ import sqlite3
 import json
 from datetime import datetime
 import uuid
+import logging
+from logging import FileHandler, Formatter
 
 
 app = Flask(__name__)
@@ -19,8 +21,8 @@ def init_db():
     conn = get_db_connection()
     conn.execute('''
     CREATE TABLE IF NOT EXISTS Admin (
-        Username STRING PRIMARY KEY,
-        Password STRING NOT NULL
+        Username TEXT PRIMARY KEY,
+        Password TEXT NOT NULL
     )
     ''')
 
@@ -28,8 +30,8 @@ def init_db():
     conn.execute('''
     CREATE TABLE IF NOT EXISTS Company(
         ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        Company_name STRING NOT NULL,
-        Company_api_key STRING NOT NULL
+        Company_name TEXT NOT NULL,
+        Company_api_key TEXT NOT NULL
     )
     ''')
     
@@ -38,10 +40,10 @@ def init_db():
     CREATE TABLE IF NOT EXISTS Location(
         ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         company_id INTEGER NOT NULL,
-        location_name STRING NOT NULL,
-        location_country STRING NOT NULL,
-        location_city STRING NOT NULL,
-        location_meta STRING NOT NULL,
+        location_name TEXT NOT NULL,
+        location_country TEXT NOT NULL,
+        location_city TEXT NOT NULL,
+        location_meta TEXT NOT NULL,
         FOREIGNKEY company_id REFERENCES Company(ID)
     )
     ''')
@@ -51,10 +53,10 @@ def init_db():
     CREATE TABLE IF NOT EXISTS Sensor(
         location_id INTEGER NOT NULL,
         sensor_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        sensor_name STRING NOT NULL,
-        sensor_category STRING NOT NULL,
-        sensor_meta STRING NOT NULL,
-        sensor_api_key STRING NOT NULL,
+        sensor_name TEXT NOT NULL,
+        sensor_category TEXT NOT NULL,
+        sensor_meta TEXT NOT NULL,
+        sensor_api_key TEXT NOT NULL,
         FOREIGNKEY location_id REFERENCES Location(ID)
     )
     ''')
@@ -155,14 +157,18 @@ def generate_api_key():
 def create_admin():
     conn = get_db_connection()
     cur = conn.cursor()
-
-    # Obtener información para crear al admin
-    username = request.json['Username']
-    password = request.json['Password']
- 
-    cur.execute('INSERT INTO Admin (Username, Password) VALUES (?, ?)', (username, password))
-    conn.commit()
-    conn.close()
+    try:
+        # Obtener información para crear al admin
+        username = request.json['Username']
+        password = request.json['Password']
+    
+        cur.execute('INSERT INTO Admin (Username, Password) VALUES (?, ?)', (username, password))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
 
     return jsonify({'message': 'Successfully created'}), 201
 
@@ -495,7 +501,15 @@ def delete_sensor_data(ID):
     return jsonify({'message': 'Deleted successfully'}), 200
 
 
-if __name__ == '__main__':   
-    # Inicializa la base de datos.
+if __name__ == '__main__':
+    # Inicializa la base de datos
     init_db()
     app.run(debug=True, host='0.0.0.0', port=8080)
+
+if not app.debug:
+    file_handler = FileHandler('error.log')
+    file_handler.setFormatter(Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+    file_handler.setLevel(logging.INFO)
+    app.logger.addHandler(file_handler)
+    app.logger.setLevel(logging.INFO)
+    app.logger.info('errors')
