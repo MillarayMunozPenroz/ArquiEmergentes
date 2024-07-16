@@ -154,6 +154,8 @@ def require_admin(f):
         if not admin:
             abort(403, 'Invalid admin credentials')
         
+        g.admin = admin['Username']
+        
         return f(*args, **kwargs)
     decorator.__name__ = f.__name__
     return decorator
@@ -182,6 +184,8 @@ def create_admin():
 
     return jsonify({'message': 'Successfully created'}), 201
 
+# TABLA Company
+
 # Admin crea Company
 @app.route('/api/v1/company', methods=['POST'])
 @require_admin
@@ -199,6 +203,18 @@ def create_company():
     conn.close()
 
     return jsonify({'company_id': company_id, 'company_api_key': company_api_key,  'message': 'Successfully created'}), 201
+
+# Muestra todo de tabla Company que pertenezcan al admin validado por credenciales
+@app.route('/api/v1/location', methods=['GET'])
+# Valida el admin
+@require_admin
+def get_locations():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(f'SELECT * FROM Company WHERE Username = ?', (g.admin))
+    rows = cur.fetchall()
+    conn.close()
+    return jsonify([dict(row) for row in rows]), 200
 
 # TABLA LOCATION
 
@@ -231,7 +247,7 @@ def create_location():
 def get_locations():
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute(f'SELECT * FROM Location')
+    cur.execute(f'SELECT * FROM Location WHERE company_id = ?', (g.company_id))
     rows = cur.fetchall()
     conn.close()
     return jsonify([dict(row) for row in rows]), 200
