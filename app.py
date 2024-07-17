@@ -334,9 +334,9 @@ def created_sensor():
 
     cur.execute('INSERT INTO Sensor(location_id, sensor_name, sensor_category, sensor_meta, sensor_api_key) VALUES(?, ?, ?, ?, ?)', 
                 (location_id, sensor_name, sensor_category, sensor_meta, sensor_api_key))
-    conn.commit
+    conn.commit()
     sensor_id = cur.lastrowid
-    conn.close
+    conn.close()
 
     return jsonify({'sensor_id': sensor_id, 'sensor_api_key': sensor_api_key, 'message': 'Successfully created'}), 201
 
@@ -432,9 +432,9 @@ def insert_sensor_data():
 
     cur.execute('INSERT INTO Sensor_Data(sensor_id, data) VALUES(?, ?)', 
                 (sensor_id, data,))
-    conn.commit
+    conn.commit()
     sensor_data_id = cur.lastrowid
-    conn.close
+    conn.close()
 
     return jsonify({'sensor_data_id': sensor_data_id, 'message': 'Successfully created'}), 201
 
