@@ -455,7 +455,6 @@ def insert_sensor_data():
     cur.execute('SELECT * FROM Sensor_Data WHERE ID = ?', (sensor_data_id,))
     sensor_data = cur.fetchone()
 
-    cur.execute()
     conn.close()
 
     return jsonify({'sensor_data_id': sensor_data_id, 'tiempo': sensor_data['tiempo'], 'message': 'Successfully created'}), 201
