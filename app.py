@@ -410,7 +410,7 @@ def delete_sensor(sensor_id):
         abort(404, 'Sensor not found')
     
     # Eliminar la ubicación
-    cur.execute('DELETE FROM Sensor WHERE sensor_id = ? AND location_id IN (SELECT ID FROM Location WHERE company_id = ?', 
+    cur.execute('DELETE FROM Sensor WHERE sensor_id = ? AND location_id IN (SELECT ID FROM Location WHERE company_id = ?)', 
                 (sensor_id, g.company_id))
     
     conn.commit()
