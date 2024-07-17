@@ -457,7 +457,7 @@ def insert_sensor_data():
 
     conn.close()
 
-    return jsonify({'sensor_data_id': sensor_data_id, 'tiempo': sensor_data['tiempo'], 'message': 'Successfully created'}), 201
+    return jsonify({'sensor_data_id': sensor_data_id, 'tiempo': sensor_data['time'], 'message': 'Successfully created'}), 201
 
 # Muestra todo de tabla Sensor_Data que correspondan a los sensores de las ubicaciones de la compañía validada por api key
 @app.route('/api/v1/sensor_data', methods=['GET'])
