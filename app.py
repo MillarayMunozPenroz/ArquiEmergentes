@@ -461,7 +461,7 @@ def insert_sensor_data():
 # Muestra todo de tabla Sensor_Data que correspondan a los sensores de las ubicaciones de la compañía validada por api key
 @app.route('/api/v1/sensor_data', methods=['GET'])
 # Valida el api key
-@require_sensor_api_key
+@require_company_api_key
 def get_sensors_data():
     from_time = request.json['from']
     to_time = request.json['to']
