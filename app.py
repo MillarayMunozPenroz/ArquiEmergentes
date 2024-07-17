@@ -402,7 +402,7 @@ def delete_sensor(sensor_id):
     cur = conn.cursor()
     
     # Verificar si el sensor existe
-    cur.execute('SELECT * FROM Sensor WHERE sensor_id = ? AND location_id IN (SELECT ID FROM Location WHERE company_id = ?', 
+    cur.execute('SELECT * FROM Sensor WHERE sensor_id = ? AND location_id IN (SELECT ID FROM Location WHERE company_id = ?)', 
                 (sensor_id, g.company_id))
     sensor = cur.fetchone()
     if not sensor:
