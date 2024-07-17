@@ -464,9 +464,9 @@ def insert_sensor_data():
 # Valida el api key
 @require_company_api_key
 def get_sensors_data():
-    from_time = request.json['from']
-    to_time = request.json['to']
-    sensor_ids = request.json['sensor_id']
+    from_time = request.headers.get('from')
+    to_time = request.headers.get('to')
+    sensor_ids = request.headers.get('sensor_id')
 
     if not from_time or not to_time or not sensor_ids:
         abort(400, 'Missing required parameters')
