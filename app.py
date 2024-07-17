@@ -100,7 +100,7 @@ def require_company_api_key(f):
         # Si el api key es válido, busca la compañía a la que corresponde
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute('SELECT ID FROM Company WHERE company_api_key = ?', (company_api_key))
+        cur.execute('SELECT ID FROM Company WHERE Company_api_key = ?', (company_api_key))
         company = cur.fetchone()
         conn.close()
         
