@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, abort, g
 import sqlite3
 import uuid
 import logging
+import json
 from logging import FileHandler, Formatter
 
 
@@ -70,7 +71,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS Sensor_Data(
             ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
             sensor_id INTEGER NOT NULL,
-            data STRING NOT NULL,
+            data TEXT NOT NULL,
             time DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGNKEY sensor_id REFERENCES Sensor(sensor_id)
         )
@@ -443,9 +444,10 @@ def insert_sensor_data():
 
     # Obtiene variable
     data = request.json['data']
+    data_json = json.dumps(data)
 
     cur.execute('INSERT INTO Sensor_Data(sensor_id, data) VALUES(?, ?)', 
-                (sensor_id, data))
+                (sensor_id, data_json))
     conn.commit()
     sensor_data_id = cur.lastrowid
 
@@ -515,9 +517,11 @@ def update_sensor_data(ID):
     # Actualizar sensor_data
     data = request.json['data']
     time = request.json['time']
+
+    data_json = json.dumps(data)
     
     cur.execute('UPDATE Sensor_Data SET data = ?, time = ? WHERE ID = ? AND sensor_id IN (SELECT sensor_id FROM Sensor WHERE location_id IN (SELECT ID FROM Location WHERE company_id = ?))', 
-                (data, time, ID, g.company_id))
+                (data_json, time, ID, g.company_id))
     conn.commit()
     conn.close()
     return jsonify({'message': 'Updated successfully'}), 200
