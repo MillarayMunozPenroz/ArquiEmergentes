@@ -464,9 +464,9 @@ def insert_sensor_data():
 # Valida el api key
 @require_company_api_key
 def get_sensors_data():
-    from_time = request.headers.get('from')
-    to_time = request.headers.get('to')
-    sensor_ids = request.headers.get('sensor_id')
+    from_time = request.json['from']
+    to_time = request.json['to']
+    sensor_ids = request.json['sensor_id']
 
     if not from_time or not to_time or not sensor_ids:
         abort(400, 'Missing required parameters')
@@ -477,8 +477,11 @@ def get_sensors_data():
     conn = get_db_connection()
     cur = conn.cursor()
 
+    # Lista de sensores
+    sensor_id_list = [int(sid) for sid in sensor_ids.split(',')]
+
     # Crea la consulta con la query anterior, se entregan los ids y los tiempos
-    cur.execute(query, sensor_ids + [from_time, to_time])
+    cur.execute(query, sensor_id_list + [from_time, to_time])
     rows = cur.fetchall()
     conn.close()
     return jsonify([dict(row) for row in rows]), 200
