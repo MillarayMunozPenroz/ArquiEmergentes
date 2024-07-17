@@ -464,26 +464,40 @@ def insert_sensor_data():
 # Valida el api key
 @require_company_api_key
 def get_sensors_data():
-    from_time = request.json['from']
-    to_time = request.json['to']
-    sensor_ids = request.json['sensor_id']
+    from_time = request.args.get('from')
+    to_time = request.args.get('to')
+    sensor_ids = request.args.get('sensor_id')
 
     if not from_time or not to_time or not sensor_ids:
         abort(400, 'Missing required parameters')
 
+    try:
+        from_time = int(from_time)
+        to_time = int(to_time)
+    except ValueError:
+        return jsonify({"error": "Invalid timestamp format"}), 400
+
+    # Convertir timestamps de EPOCH a formato datetime
+    from_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(from_time))
+    to_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(to_time))
+
+
     # Crear la query para que acepte un arreglo de ids
-    query = 'SELECT * FROM Sensor_Data WHERE sensor_id IN ({seq}) AND tiempo BETWEEN ? AND ?'
-    query = query.format(seq=','.join(['?'] * len(sensor_ids)))
+    query = 'SELECT * FROM Sensor_Data WHERE time BETWEEN ? AND ?'
+    params = [from_date, to_date]
+
+    if sensor_ids:
+        query += " AND sensor_id IN ({})".format(','.join(['?'] * len(sensor_ids)))
+        params.extend(sensor_ids)
+
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # Lista de sensores
-    sensor_id_list = [int(sid) for sid in sensor_ids.split(',')]
-
     # Crea la consulta con la query anterior, se entregan los ids y los tiempos
-    cur.execute(query, sensor_id_list + [from_time, to_time])
+    cur.execute(query, params)
     rows = cur.fetchall()
     conn.close()
+
     return jsonify([dict(row) for row in rows]), 200
 
 # Muestra uno de tabla Sensor_Data que se encuentre en el sensor de las ubicaciones de la compañía validada por api key
