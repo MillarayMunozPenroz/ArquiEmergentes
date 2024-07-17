@@ -117,7 +117,7 @@ def require_company_api_key(f):
 # Se crea validador del sensor_api_key
 def require_sensor_api_key(f):
     def decorator(*args, **kwargs):
-        sensor_api_key = request.headers.get('company_api_key')
+        sensor_api_key = request.json['api_key']
 
         if not sensor_api_key:
             abort(400, 'sensor_api_key is required')
@@ -421,31 +421,51 @@ def delete_sensor(sensor_id):
 
 # Crea Sensor_Data
 @app.route('/api/v1/sensor_data', methods=['POST'])
-@require_sensor_api_key
 def insert_sensor_data():
+    sensor_api_key = request.json['api_key']
+
+    if not sensor_api_key:
+        abort(400, 'sensor_api_key is required')
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT sensor_id FROM Sensor WHERE sensor_api_key = ?', (sensor_api_key,))
+    sensor = cur.fetchone()
+    conn.close()
+
+    if not sensor:
+        abort(401, 'Invalid sensor_api_key')
+
+    sensor_id = sensor['sensor_id']
+
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # Obtiene variables
-    sensor_id = request.json['lsensor_id']
+    # Obtiene variable
     data = request.json['data']
 
     cur.execute('INSERT INTO Sensor_Data(sensor_id, data) VALUES(?, ?)', 
-                (sensor_id, data,))
+                (sensor_id, data))
     conn.commit()
     sensor_data_id = cur.lastrowid
+
+    # Para saber el tiempo
+    cur.execute('SELECT * FROM Sensor_Data WHERE ID = ?', (sensor_data_id,))
+    sensor_data = cur.fetchone()
+
+    cur.execute()
     conn.close()
 
-    return jsonify({'sensor_data_id': sensor_data_id, 'message': 'Successfully created'}), 201
+    return jsonify({'sensor_data_id': sensor_data_id, 'tiempo': sensor_data['tiempo'], 'message': 'Successfully created'}), 201
 
 # Muestra todo de tabla Sensor_Data que correspondan a los sensores de las ubicaciones de la compañía validada por api key
 @app.route('/api/v1/sensor_data', methods=['GET'])
 # Valida el api key
-@require_company_api_key
+@require_sensor_api_key
 def get_sensors_data():
-    from_time = request.args.get('from')
-    to_time = request.args.get('to')
-    sensor_ids = request.args.getlist('sensor_id')
+    from_time = request.json['from']
+    to_time = request.json['to']
+    sensor_ids = request.json['sensor_id']
 
     if not from_time or not to_time or not sensor_ids:
         abort(400, 'Missing required parameters')
@@ -493,12 +513,11 @@ def update_sensor_data(ID):
         abort(404, 'Sensor Data not found')
 
     # Actualizar sensor_data
-    sensor_id = request.json['sensor_id']
     data = request.json['data']
     time = request.json['time']
     
-    cur.execute('UPDATE Sensor_Data SET sensor_id = ?, data = ?, time = ? WHERE ID = ? AND sensor_id IN (SELECT sensor_id FROM Sensor WHERE location_id IN (SELECT ID FROM Location WHERE company_id = ?))', 
-                (sensor_id, data, time, ID, g.company_id))
+    cur.execute('UPDATE Sensor_Data SET data = ?, time = ? WHERE ID = ? AND sensor_id IN (SELECT sensor_id FROM Sensor WHERE location_id IN (SELECT ID FROM Location WHERE company_id = ?))', 
+                (data, time, ID, g.company_id))
     conn.commit()
     conn.close()
     return jsonify({'message': 'Updated successfully'}), 200
