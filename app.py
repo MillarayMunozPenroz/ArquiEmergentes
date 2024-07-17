@@ -280,10 +280,10 @@ def update_location(location_name):
         abort(404, 'Location not found')
 
     # Actualizar la ubicación
-    location_name = request.json('location_name')
-    location_country = request.json('location_country')
-    location_city = request.json('location_city')
-    location_meta = request.json('location_meta')
+    location_name = request.json['location_name']
+    location_country = request.json['location_country']
+    location_city = request.json['location_city']
+    location_meta = request.json['location_meta']
     
     cur.execute('''
         UPDATE Location 
@@ -326,10 +326,10 @@ def created_sensor():
     cur = conn.cursor()
 
     # Obtiene variables
-    location_id = request.json('location_id')
-    sensor_name = request.json('sensor_name')
-    sensor_category = request.json('sensor_category')
-    sensor_meta = request.json('sensor_meta')
+    location_id = request.json['location_id']
+    sensor_name = request.json['sensor_name']
+    sensor_category = request.json['sensor_category']
+    sensor_meta = request.json['sensor_meta']
     sensor_api_key = generate_api_key()
 
     cur.execute('INSERT INTO Sensor(location_id, sensor_name, sensor_category, sensor_meta, sensor_api_key) VALUES(?, ?, ?, ?, ?)', 
@@ -383,10 +383,10 @@ def update_sensor(sensor_id):
         abort(404, 'Sensor not found')
 
     # Actualizar sensor
-    location_id = request.json.get('location_id')
-    sensor_name = request.json.get('sensor_name')
-    sensor_category = request.json.get('sensor_category')
-    sensor_meta = request.json.get('sensor_meta')
+    location_id = request.json['location_id']
+    sensor_name = request.json['sensor_name']
+    sensor_category = request.json['sensor_category']
+    sensor_meta = request.json['sensor_meta']
     
     cur.execute('UPDATE Sensor SET location_id = ?, sensor_name = ?, sensor_category = ?, sensor_meta = ? WHERE sensor_id = ? AND location_id IN (SELECT ID FROM Location WHERE company_id = ?)', 
                 (location_id, sensor_name, sensor_category, sensor_meta, sensor_id, g.company_id))
@@ -427,8 +427,8 @@ def insert_sensor_data():
     cur = conn.cursor()
 
     # Obtiene variables
-    sensor_id = request.json('lsensor_id')
-    data = request.json('data')
+    sensor_id = request.json['lsensor_id']
+    data = request.json['data']
 
     cur.execute('INSERT INTO Sensor_Data(sensor_id, data) VALUES(?, ?)', 
                 (sensor_id, data,))
@@ -493,9 +493,9 @@ def update_sensor_data(ID):
         abort(404, 'Sensor Data not found')
 
     # Actualizar sensor_data
-    sensor_id = request.json('sensor_id')
-    data = request.json('data')
-    time = request.json('time')
+    sensor_id = request.json['sensor_id']
+    data = request.json['data']
+    time = request.json['time']
     
     cur.execute('UPDATE Sensor_Data SET sensor_id = ?, data = ?, time = ? WHERE ID = ? AND sensor_id IN (SELECT sensor_id FROM Sensor WHERE location_id IN (SELECT ID FROM Location WHERE company_id = ?))', 
                 (sensor_id, data, time, ID, g.company_id))
