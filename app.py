@@ -280,7 +280,7 @@ def update_location(location_name):
         abort(404, 'Location not found')
 
     # Actualizar la ubicación
-    location_name = request.json['location_name']
+    location_name2 = request.json['location_name']
     location_country = request.json['location_country']
     location_city = request.json['location_city']
     location_meta = request.json['location_meta']
@@ -289,7 +289,7 @@ def update_location(location_name):
         UPDATE Location 
         SET location_name = ?, location_country = ?, location_city = ?, location_meta = ?
         WHERE location_name = ? AND company_id = ?
-    ''', (location_name, location_country, location_city, location_meta, location_name, g.company_id))
+    ''', (location_name2, location_country, location_city, location_meta, location_name, g.company_id))
     
     conn.commit()
     conn.close()
